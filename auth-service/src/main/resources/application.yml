@@ -11,3 +11,13 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+  application:
+    security:
+      jwt:
+          # Essa é uma chave segura de 256 bits em Hex/Base64 gerada aleatoriamente.
+          # No futuro, na AWS, isso ficará dentro do AWS Secrets Manager.
+          secret-key: "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
+
+          # Opcional, mas é uma boa prática deixar o tempo também no YML: 86400000ms = 24h
+          expiration: 86400000

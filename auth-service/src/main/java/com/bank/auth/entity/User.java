@@ -26,6 +26,7 @@ public class User {
     private String email;
 
     @Column(unique = true, nullable = false, length = 11)
+    @ToString.Exclude
     private String cpf;
 
     @Column(nullable = false)
