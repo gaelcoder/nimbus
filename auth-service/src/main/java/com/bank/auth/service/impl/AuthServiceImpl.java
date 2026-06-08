@@ -4,6 +4,8 @@ import com.bank.auth.dto.AuthResponse;
 import com.bank.auth.dto.LoginRequest;
 import com.bank.auth.dto.RegisterRequest;
 import com.bank.auth.entity.User;
+import com.bank.auth.exception.ResourceNotFoundException;
+import com.bank.auth.exception.UserAlreadyExistsException;
 import com.bank.auth.repository.UserRepository;
 import com.bank.auth.security.JwtService;
 import com.bank.auth.service.AuthService;
@@ -24,26 +26,32 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse register(RegisterRequest request) {
-        // 1. Verifica se já existe (daria pra lançar uma Exception customizada aqui)
-        if (userRepository.existsByEmail(request.getEmail()) || userRepository.existsByCpf(request.getCpf())) {
-            throw new RuntimeException("E-mail ou CPF já cadastrados!");
+
+        String cpf = request.getCpf().replaceAll("\\D", "");
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new UserAlreadyExistsException(
+                    "Email already registered"
+            );
         }
 
-        // 2. Converte o DTO para a Entidade User
-        var user = User.builder()
+        if (userRepository.existsByCpf(cpf)) {
+            throw new RuntimeException("CPF already registered");
+        }
+
+        User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
-                .cpf(request.getCpf())
-                .password(passwordEncoder.encode(request.getPassword())) // Criptografando!
+                .cpf(cpf)
+                .password(passwordEncoder.encode(request.getPassword()))
                 .birthDate(request.getBirthDate())
                 .active(true)
                 .build();
 
-        // 3. Salva no banco
         userRepository.save(user);
 
-        // 4. Gera o token e devolve
-        var jwtToken = jwtService.generateToken(user);
+        String jwtToken = jwtService.generateToken(user);
+
         return AuthResponse.builder()
                 .token(jwtToken)
                 .build();
@@ -62,7 +70,10 @@ public class AuthServiceImpl implements AuthService {
 
         // 2. Se passou da linha de cima, a senha tá certa! Pega o usuário do banco.
         var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User not found"
+                        ));
 
         // 3. Gera o token e devolve
         var jwtToken = jwtService.generateToken(user);

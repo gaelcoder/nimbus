@@ -24,7 +24,6 @@
         <module>transaction-service</module>
         <module>notification-service</module>
         <module>shared</module>
-        <module>infrastructure</module>
     </modules>
 
     <properties>
