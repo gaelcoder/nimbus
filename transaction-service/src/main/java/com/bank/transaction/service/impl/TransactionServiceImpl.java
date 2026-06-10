@@ -1,5 +1,6 @@
 package com.bank.transaction.service.impl;
-
+import com.bank.shared.event.TransactionEvent;
+import com.bank.transaction.aws.sqs.SqsProducer;
 import com.bank.transaction.dto.CreateTransactionRequest;
 import com.bank.transaction.dto.TransactionResponse;
 import com.bank.transaction.entity.Transaction;
@@ -8,6 +9,7 @@ import com.bank.transaction.enums.TransactionType;
 import com.bank.transaction.exception.TransactionNotFoundException;
 import com.bank.transaction.repository.TransactionRepository;
 import com.bank.transaction.service.TransactionService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
 
+    private final SqsProducer sqsProducer;
+    private final ObjectMapper objectMapper;
     private final TransactionRepository transactionRepository;
 
     @Override
@@ -36,6 +40,8 @@ public class TransactionServiceImpl implements TransactionService {
 
         Transaction saved =
                 transactionRepository.save(transaction);
+
+        publishTransactionEvent(saved);
 
         return mapToResponse(saved);
     }
@@ -82,6 +88,32 @@ public class TransactionServiceImpl implements TransactionService {
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
+    }
+
+    private void publishTransactionEvent(Transaction transaction) {
+
+        try {
+
+            TransactionEvent event =
+                    TransactionEvent.builder()
+                            .transactionId(transaction.getId())
+                            .sourceAccountId(transaction.getSourceAccountId())
+                            .destinationAccountId(transaction.getDestinationAccountId())
+                            .amount(transaction.getAmount())
+                            .build();
+
+            String message =
+                    objectMapper.writeValueAsString(event);
+
+            sqsProducer.sendMessage(message);
+
+        } catch (Exception e) {
+
+            throw new RuntimeException(
+                    "Failed to publish transaction event",
+                    e
+            );
+        }
     }
 
 

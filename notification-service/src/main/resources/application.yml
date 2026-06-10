@@ -1,3 +1,32 @@
+server:
+  port: 8083
+
 spring:
   datasource:
     url: jdbc:postgresql://postgres:5432/nimbus
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+aws:
+  region: us-east-2
+  sqs:
+    transaction-queue-url: ${SQS_TRANSACTION_QUEUE_URL}
+  dynamodb:
+    transaction-audit-table: nimbus-transaction-audit
+  s3:
+    reports-bucket: nimbus-reports
+
+spring.cloud.aws:
+  region:
+    static: us-east-2
+  credentials:
+    access-key: ${AWS_ACCESS_KEY_ID:}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:}

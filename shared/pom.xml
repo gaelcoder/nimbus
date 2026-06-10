@@ -14,7 +14,6 @@
 
     <dependencies>
 
-        <!-- apenas utilidades -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
