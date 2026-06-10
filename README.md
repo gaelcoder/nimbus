@@ -1,4 +1,4 @@
-# Nimbus Bank: Microservices Banking System with Spring Boot, AWS and Automation
+# Nimbus: Microservices Banking System with Spring Boot, AWS and Automation
 
 Nimbus é um sistema bancário baseado em microsserviços desenvolvido para demonstrar arquitetura moderna de backend utilizando Java, Spring Boot, Docker, PostgreSQL, AWS e automações Python.
 
